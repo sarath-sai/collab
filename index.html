@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>6G Signal Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7f9;
+      color: #333;
+    }
+
+    header {
+      background: #0e76a8;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.8rem;
+    }
+
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 300px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #0e76a8;
+    }
+
+    .signal-strength {
+      font-size: 2.5rem;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .status {
+      text-align: center;
+      font-weight: bold;
+      padding: 5px;
+      border-radius: 5px;
+      color: white;
+    }
+
+    .status.good { background: #28a745; }
+    .status.average { background: #ffc107; }
+    .status.poor { background: #dc3545; }
+
+    canvas {
+      width: 100% !important;
+      height: 250px !important;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      padding: 10px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    📶 6G Signal Monitoring Dashboard
+  </header>
+
+  <section class="dashboard">
+    <div class="card">
+      <h3>Current Signal Strength</h3>
+      <div class="signal-strength" id="signalStrength">-- dBm</div>
+      <div id="signalStatus" class="status">--</div>
+    </div>
+
+    <div class="card">
+      <h3>Signal Strength (Live)</h3>
+      <canvas id="signalChart"></canvas>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 6G Networks | Dashboard UI by ChatGPT
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const signalStrengthEl = document.getElementById("signalStrength");
+    const signalStatusEl = document.getElementById("signalStatus");
+
+    function getRandomSignal() {
+      // Simulating 6G signal between -60 and -120 dBm
+      return Math.floor(Math.random() * 60) - 120;
+    }
+
+    function updateSignalUI(signal) {
+      signalStrengthEl.textContent = signal + " dBm";
+
+      if (signal >= -70) {
+        signalStatusEl.textContent = "Good";
+        signalStatusEl.className = "status good";
+      } else if (signal >= -90) {
+        signalStatusEl.textContent = "Average";
+        signalStatusEl.className = "status average";
+      } else {
+        signalStatusEl.textContent = "Poor";
+        signalStatusEl.className = "status poor";
+      }
+    }
+
+    // Chart Setup
+    const ctx = document.getElementById('signalChart').getContext('2d');
+    const signalData = {
+      labels: [],
+      datasets: [{
+        label: 'Signal Strength (dBm)',
+        data: [],
+        borderColor: '#0e76a8',
+        backgroundColor: 'rgba(14, 118, 168, 0.2)',
+        fill: true,
+        tension: 0.3
+      }]
+    };
+
+    const signalChart = new Chart(ctx, {
+      type: 'line',
+      data: signalData,
+      options: {
+        scales: {
+          y: {
+            suggestedMin: -130,
+            suggestedMax: -50
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Update function
+    function updateDashboard() {
+      const signal = getRandomSignal();
+      updateSignalUI(signal);
+
+      const currentTime = new Date().toLocaleTimeString();
+      signalChart.data.labels.push(currentTime);
+      signalChart.data.datasets[0].data.push(signal);
+
+      if (signalChart.data.labels.length > 20) {
+        signalChart.data.labels.shift();
+        signalChart.data.datasets[0].data.shift();
+      }
+
+      signalChart.update();
+    }
+
+    // Update every 2 seconds
+    updateDashboard();
+    setInterval(updateDashboard, 2000);
+  </script>
+</body>
+</html>
